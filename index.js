@@ -30,6 +30,8 @@ async function run() {
     const db = client.db('eco_track_db');
     const ecoTrackCollection = db.collection('ecotracks');
     const activeChallengeCollection = db.collection('active_challange');
+    const renectTipsCollection = db.collection('renect_tips');
+    const nextEventsCollection = db.collection('next_events');
 
     app.get('/hero-slides', async (req, res) => {
       const result = await ecoTrackCollection.find().toArray();
@@ -38,6 +40,16 @@ async function run() {
 
     app.get('/active-challange', async (req, res) => {
       const result = await activeChallengeCollection.find().toArray();
+      res.send(result);
+    });
+
+    app.get('/renect-tips', async (req, res) => {
+      const result = await renectTipsCollection.find().toArray();
+      res.send(result);
+    });
+
+    app.get('/next-events', async (req, res) => {
+      const result = await nextEventsCollection.find().toArray();
       res.send(result);
     });
 
