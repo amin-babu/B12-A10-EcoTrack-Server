@@ -29,11 +29,17 @@ async function run() {
     
     const db = client.db('eco_track_db');
     const ecoTrackCollection = db.collection('ecotracks');
+    const activeChallengeCollection = db.collection('active_challange');
 
     app.get('/hero-slides', async (req, res) => {
       const result = await ecoTrackCollection.find().toArray();
       res.send(result);
-    })
+    });
+
+    app.get('/active-challange', async (req, res) => {
+      const result = await activeChallengeCollection.find().toArray();
+      res.send(result);
+    });
 
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
