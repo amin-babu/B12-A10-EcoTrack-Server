@@ -59,6 +59,13 @@ async function run() {
       res.send(result);
     });
 
+    app.delete('/challanges/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await challengeCollection.deleteOne(query);
+      res.send(result);
+    });
+
     app.get('/active-challenges', async (req, res) => {
       const result = await challengeCollection.find().limit(6).toArray();
       res.send(result)
