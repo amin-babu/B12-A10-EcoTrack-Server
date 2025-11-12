@@ -69,7 +69,7 @@ async function run() {
     app.post('/challanges/join/:id', async (req, res) => {
       const { userId } = req.body;
       const challengeId = req.params.id;
-      
+
       const newJoin = {
         userId,
         challengeId,
@@ -84,9 +84,16 @@ async function run() {
         { _id: new ObjectId(challengeId) },
         { $inc: { participants: 1 } }
       );
-     
+
       res.send({ success: true, message: "Joined successfully" })
-    })
+    });
+
+    app.post('/api/challanges', async (req, res) => {
+      const newChallenge = req.body;
+      newChallenge.participants = 0;
+      const result = await challengeCollection.insertOne(newChallenge);
+      res.send({ success: true, result });
+    });
 
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
