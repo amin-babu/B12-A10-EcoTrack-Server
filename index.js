@@ -51,6 +51,14 @@ async function run() {
       res.send(result);
     });
 
+    app.put('/challanges/:id', async (req, res) => {
+      const id = req.params.id;
+      const updatedData = req.body;
+      const query = { _id: new ObjectId(id) };
+      const result = await challengeCollection.updateOne(query, { $set: updatedData });
+      res.send(result);
+    });
+
     app.get('/active-challenges', async (req, res) => {
       const result = await challengeCollection.find().limit(6).toArray();
       res.send(result)
