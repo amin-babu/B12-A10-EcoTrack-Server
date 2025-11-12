@@ -1,5 +1,5 @@
 const express = require('express');
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const cors = require('cors');
 const app = express();
 const port = process.env.PORT || 3000;
@@ -26,21 +26,34 @@ app.get('/', (req, res) => {
 async function run() {
   try {
     await client.connect();
-    
+
     const db = client.db('eco_track_db');
     const ecoTrackCollection = db.collection('ecotracks');
-    const activeChallengeCollection = db.collection('active_challange');
+    const challengeCollection = db.collection('challanges');
     const renectTipsCollection = db.collection('renect_tips');
     const nextEventsCollection = db.collection('next_events');
+    const usersCollection = db.collection('users');
 
     app.get('/hero-slides', async (req, res) => {
       const result = await ecoTrackCollection.find().toArray();
       res.send(result);
     });
 
-    app.get('/active-challange', async (req, res) => {
-      const result = await activeChallengeCollection.find().toArray();
+    app.get('/challanges', async (req, res) => {
+      const result = await challengeCollection.find().toArray();
       res.send(result);
+    });
+
+    app.get('/challanges/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await challengeCollection.findOne(query);
+      res.send(result);
+    });
+
+    app.get('/active-challenges', async (req, res) => {
+      const result = await challengeCollection.find().limit(6).toArray();
+      res.send(result)
     });
 
     app.get('/renect-tips', async (req, res) => {
@@ -52,6 +65,28 @@ async function run() {
       const result = await nextEventsCollection.find().toArray();
       res.send(result);
     });
+
+    app.post('/challanges/join/:id', async (req, res) => {
+      const { userId } = req.body;
+      const challengeId = req.params.id;
+      
+      const newJoin = {
+        userId,
+        challengeId,
+        status: "Not Started",
+        progress: 0,
+        joinDate: new Date()
+      };
+
+      await usersCollection.insertOne(newJoin);
+
+      await challengeCollection.updateOne(
+        { _id: new ObjectId(challengeId) },
+        { $inc: { participants: 1 } }
+      );
+     
+      res.send({ success: true, message: "Joined successfully" })
+    })
 
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
