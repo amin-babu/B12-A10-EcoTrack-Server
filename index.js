@@ -39,6 +39,11 @@ async function run() {
       res.send(result);
     });
 
+    app.get('/my-activities', async (req, res) => {
+      const result = await usersChallenge.find().toArray();
+      res.send(result);
+    });
+
     app.get('/challanges', async (req, res) => {
       const { category, startDate, endDate, minParticipants, maxParticipants } = req.query;
       let filter = {};
@@ -132,6 +137,23 @@ async function run() {
       const result = await challengeCollection.insertOne(newChallenge);
       res.send({ success: true, result });
     });
+
+    app.patch('/userChallenges/:id', async (req, res) => {
+      const id = req.params.id;
+      const updatedProgress = req.body.progress;
+
+      const query = { _id: new ObjectId(id) };
+      const updateDoc = {
+        $set: {
+          progress: updatedProgress,
+          lastUpdated: new Date(),
+        },
+      };
+
+      const result = await usersChallenge.updateOne(query, updateDoc);
+      res.send(result);
+    });
+
 
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
