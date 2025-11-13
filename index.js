@@ -32,7 +32,7 @@ async function run() {
     const challengeCollection = db.collection('challanges');
     const renectTipsCollection = db.collection('renect_tips');
     const nextEventsCollection = db.collection('next_events');
-    const usersCollection = db.collection('users');
+    const usersChallenge = db.collection('users');
 
     app.get('/hero-slides', async (req, res) => {
       const result = await ecoTrackCollection.find().toArray();
@@ -40,7 +40,27 @@ async function run() {
     });
 
     app.get('/challanges', async (req, res) => {
-      const result = await challengeCollection.find().toArray();
+      const { category, startDate, endDate, minParticipants, maxParticipants } = req.query;
+      let filter = {};
+
+      if (category) {
+        const categories = category.split(',');
+        filter.category = { $in: categories };
+      }
+
+      if (startDate && endDate) {
+        filter.startDate = { $gte: new Date(startDate), $lte: new Date(endDate) };
+      }
+
+      if (minParticipants && maxParticipants) {
+        filter.participants = { $gte: parseInt(minParticipants), $lte: parseInt(maxParticipants) };
+      } else if (minParticipants) {
+        filter.participants = { $gte: parseInt(minParticipants) };
+      } else if (maxParticipants) {
+        filter.participants = { $lte: parseInt(maxParticipants) };
+      }
+
+      const result = await challengeCollection.find(filter).toArray();
       res.send(result);
     });
 
@@ -53,7 +73,10 @@ async function run() {
 
     app.put('/challanges/:id', async (req, res) => {
       const id = req.params.id;
-      const updatedData = req.body;
+      const updatedData = {
+        ...req.body,
+        updatedAt: new Date(),
+      };
       const query = { _id: new ObjectId(id) };
       const result = await challengeCollection.updateOne(query, { $set: updatedData });
       res.send(result);
@@ -93,7 +116,7 @@ async function run() {
         joinDate: new Date()
       };
 
-      await usersCollection.insertOne(newJoin);
+      await usersChallenge.insertOne(newJoin);
 
       await challengeCollection.updateOne(
         { _id: new ObjectId(challengeId) },
